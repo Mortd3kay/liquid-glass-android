@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import org.intellij.lang.annotations.Language
+import kotlin.math.abs
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 internal data class GlassElement(
@@ -56,17 +58,17 @@ internal data class GlassElement(
         val tolerance = 0.01f
         val positionDiff = (position - other.position)
         val positionDistance =
-            kotlin.math.sqrt(positionDiff.x * positionDiff.x + positionDiff.y * positionDiff.y)
+            sqrt(positionDiff.x * positionDiff.x + positionDiff.y * positionDiff.y)
         return positionDistance < tolerance &&
-                kotlin.math.abs(size.width - other.size.width) < tolerance &&
-                kotlin.math.abs(size.height - other.size.height) < tolerance &&
-                kotlin.math.abs(scale - other.scale) < tolerance &&
-                kotlin.math.abs(blur - other.blur) < tolerance &&
-                kotlin.math.abs(centerDistortion - other.centerDistortion) < tolerance &&
-                kotlin.math.abs(cornerRadius - other.cornerRadius) < tolerance &&
-                kotlin.math.abs(elevation - other.elevation) < tolerance &&
-                kotlin.math.abs(darkness - other.darkness) < tolerance &&
-                kotlin.math.abs(warpEdges - other.warpEdges) < tolerance &&
+                abs(size.width - other.size.width) < tolerance &&
+                abs(size.height - other.size.height) < tolerance &&
+                abs(scale - other.scale) < tolerance &&
+                abs(blur - other.blur) < tolerance &&
+                abs(centerDistortion - other.centerDistortion) < tolerance &&
+                abs(cornerRadius - other.cornerRadius) < tolerance &&
+                abs(elevation - other.elevation) < tolerance &&
+                abs(darkness - other.darkness) < tolerance &&
+                abs(warpEdges - other.warpEdges) < tolerance &&
                 tint == other.tint
     }
 }

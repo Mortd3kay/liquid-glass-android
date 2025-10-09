@@ -1,18 +1,84 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    `maven-publish`
-    signing
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.kotlinMultiplatform)
+}
+
+kotlin {
+    androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_23)
+        }
+    }
+
+    jvm("desktop")
+
+    sourceSets {
+        val desktopMain by getting
+
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(project.dependencies.platform(libs.compose.bom))
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.ui)
+            implementation(libs.androidx.ui.graphics)
+        }
+
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
+
+//            After Effects Animations
+            implementation(libs.compose.icons.extended)
+
+            implementation(libs.compottie)
+        }
+
+        desktopMain.dependencies {
+            implementation(project.dependencies.platform(libs.compose.bom))
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutinesSwing)
+
+            implementation(libs.compose.ui)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.animation)
+        }
+
+        jsMain.dependencies {
+            implementation(libs.html.core.js)
+        }
+    }
+
+    js(IR) {
+        browser {
+            binaries.executable()
+        }
+    }
 }
 
 android {
-    namespace = "com.mrtdk.glass"
-    compileSdk = 35
+    namespace = "org.delyo.glass"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 21
-        consumerProguardFiles("consumer-rules.pro")
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
+//        proguardFiles.add(files("consumer-rules.pro").files.first())
+
+        versionCode = 1
+        versionName = "0.1.0"
     }
 
     buildTypes {
@@ -24,95 +90,29 @@ android {
             )
         }
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_23
+        targetCompatibility = JavaVersion.VERSION_23
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+}
 
-    buildFeatures {
-        compose = true
-    }
-    
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-            withJavadocJar()
+compose.desktop {
+    application {
+        mainClass = "org.delyo.glass.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "org.delyo.glass"
+            packageVersion = "1.0.0"
         }
     }
 }
 
 dependencies {
-    implementation(libs.androidx.material3)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-}
-
-// Maven Publishing Configuration
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.mrtdk"
-            artifactId = "glass"
-            version = "0.1.0"
-            
-            afterEvaluate {
-                from(components["release"])
-            }
-            
-            pom {
-                name.set("Glass")
-                description.set("A library for creating glass morphism effects in Jetpack Compose with support for Android API 24+")
-                url.set("https://github.com/Mortd3kay/liquid-glass-compose")
-                
-                licenses {
-                    license {
-                        name.set("Apache License 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                    }
-                }
-                
-                developers {
-                    developer {
-                        id.set("mrtdk")
-                        name.set("MRTDK")
-                        email.set("undergroundcome@gmail.com")
-                    }
-                }
-                
-                scm {
-                    connection.set("scm:git:git://github.com/Mortd3kay/liquid-glass-compose.git")
-                    developerConnection.set("scm:git:ssh://github.com/Mortd3kay/liquid-glass-compose.git")
-                    url.set("https://github.com/Mortd3kay/liquid-glass-compose")
-                }
-            }
-        }
-    }
-    
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = project.findProperty("ossrhUsername") as String?
-                password = project.findProperty("ossrhPassword") as String?
-            }
-        }
-    }
-}
-
-// Signing Configuration
-signing {
-    val signingKeyId = project.findProperty("signing.keyId") as String?
-    val signingPassword = project.findProperty("signing.password") as String?
-    val signingSecretKeyRingFile = project.findProperty("signing.secretKeyRingFile") as String?
-    
-    if (signingKeyId != null) {
-        useInMemoryPgpKeys(signingKeyId, signingSecretKeyRingFile, signingPassword)
-        sign(publishing.publications)
-    }
+    debugImplementation(compose.uiTooling)
 }
