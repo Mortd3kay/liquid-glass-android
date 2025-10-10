@@ -38,11 +38,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-
-//            After Effects Animations
-            implementation(libs.compose.icons.extended)
-
-            implementation(libs.compottie)
         }
 
         desktopMain.dependencies {
@@ -53,23 +48,13 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
-            implementation(libs.compose.animation)
         }
 
-        jsMain.dependencies {
-            implementation(libs.html.core.js)
-        }
-    }
-
-    js(IR) {
-        browser {
-            binaries.executable()
-        }
     }
 }
 
 android {
-    namespace = "org.delyo.glass"
+    namespace = "com.mrtdk.glass"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -103,11 +88,11 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "org.delyo.glass.MainKt"
+        mainClass = "com.mrtdk.glass.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.delyo.glass"
+            packageName = "com.mrtdk.glass"
             packageVersion = "1.0.0"
         }
     }
